@@ -3,7 +3,7 @@ from typing import Literal
 
 
 @dataclass
-class Spells:
+class Spell:
     level: int
     name: str
     cast_time: int

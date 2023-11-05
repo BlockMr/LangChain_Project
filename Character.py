@@ -10,7 +10,9 @@ class Character:
     race: str
     background: str
     pl_name: str
-    worldview: str
+    alignment: Literal['lawful_good', 'lawful_neutral', 'lawful_evil',
+                       'neutral_good', 'neutral', 'neutral_evil',
+                       'chaotic_good', 'chaotic_neutral', 'chaotic_evil']
     exp_points: int
     inspiration: int
     prof_bonus: int
@@ -18,13 +20,6 @@ class Character:
     initiative: int
     speed: int
     initiative: int
-    armor_class: int
-    hair: str
-    skin: str
-    eyes: str
-    height: int
-    weight: int
-    age: int
     cur_hit_points: int
     temp_hit_points: int
     hit_dice: int
@@ -36,5 +31,5 @@ class Character:
     features_traits: str
     passive_wisdom: int
     other_prof_lang: str
-    opisanie_pers: str
+    description: str
 
