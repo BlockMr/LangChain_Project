@@ -11,5 +11,5 @@ class Spell:
     school: str
     range_area: int
     attack_save: str
-    components: Literal['V', 'S', 'M', '*']
-
+    components: list[Literal['V', 'S', 'M', '*']]
+    description: str

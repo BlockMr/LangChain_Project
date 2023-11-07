@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 from typing import Literal
+from AbilityStats import AbilityStats
+from Skills import Skills
+from Spell import Spell
 
 
 @dataclass
@@ -10,9 +13,9 @@ class Character:
     race: str
     background: str
     pl_name: str
-    alignment: Literal['lawful_good', 'lawful_neutral', 'lawful_evil',
-                       'neutral_good', 'neutral', 'neutral_evil',
-                       'chaotic_good', 'chaotic_neutral', 'chaotic_evil']
+    alignment: Literal['LG', 'LN', 'LV',
+                       'NG', 'N', 'NV',
+                       'CG', 'CN', 'CV']
     exp_points: int
     inspiration: int
     prof_bonus: int
@@ -32,4 +35,7 @@ class Character:
     passive_wisdom: int
     other_prof_lang: str
     description: str
+    abilities: AbilityStats
+    skills: Skills
+    spells: list[Spell]
 
