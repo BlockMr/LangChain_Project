@@ -39,3 +39,6 @@ class Character:
     skills: Skills
     spells: list[Spell]
 
+    def __str__(self):
+        pass
+
