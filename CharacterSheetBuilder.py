@@ -15,15 +15,15 @@ class CharacterSheetBuilder:
         # )
 
     def get_description(self):
-        art_promt = f'Напиши краткое художественное описание внешности и одежды для персонажа' \
+        art_prompt = f'Напиши краткое художественное описание внешности и одежды для персонажа' \
                     f'существующего в рамках сеттинга описываемого как {self.user_setting}' \
                     f' используя данное краткое описание: {self.user_request}'
-        description = self.llm.invoke(art_promt).content
+        description = self.llm.invoke(art_prompt).content
 
         return description
 
     # def get_ability_stats(self):
-    #     stats_promt = f''
+    #     stats_prompt = f''
 
 
 load_dotenv()
