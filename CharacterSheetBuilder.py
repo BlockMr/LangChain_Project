@@ -16,11 +16,13 @@ class CharacterSheetBuilder:
     def get_description(self):
         art_description = f'Напиши краткое художественное описание для несуществующего персонажа' \
                           f' используя данный запрос {self.user_request}'
+        self.llm.invoke(art_description)
 
 
 load_dotenv()
 
 user_request = input()
+
 
 char_build = CharacterSheetBuilder(user_request)
 print(char_build.character_sheet)
