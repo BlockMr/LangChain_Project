@@ -16,7 +16,11 @@ class CharacterSheetBuilder:
     def get_description(self):
         art_description = f'Напиши краткое художественное описание для несуществующего персонажа' \
                           f' используя данный запрос {self.user_request}'
-        self.llm.invoke(art_description)
+        description = self.llm.invoke(art_description)
+        return description
+
+    # def get_ability_stats(self):
+    #     pass
 
 
 load_dotenv()
