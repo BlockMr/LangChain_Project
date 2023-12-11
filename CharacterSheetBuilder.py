@@ -9,19 +9,9 @@ class CharacterSheetBuilder:
     def __init__(self, user_request, user_setting):
         self.user_request = user_request
         self.user_setting = user_setting
-        self.ability_stats = {}
         self.llm = ChatOpenAI(openai_api_key=os.environ['API_KEY_OPENAI'])
-        self.character_sheet = Character(
-            description=self.get_description(),
-            abilities=AbilityStats(
-                strength=AbilityStat(self.ability_stats['strength'][0], self.ability_stats['strength'][1]),
-                dexterity=AbilityStat(self.ability_stats['dexterity'][0], self.ability_stats['dexterity'][1]),
-                constitution=AbilityStat(self.ability_stats['constitution'][0], self.ability_stats['constitution'][1]),
-                intelligence=AbilityStat(self.ability_stats['intelligence'][0], self.ability_stats['intelligence'][1]),
-                wisdom=AbilityStat(self.ability_stats['wisdom'][0], self.ability_stats['wisdom'][1]),
-                charisma=AbilityStat(self.ability_stats['charisma'][0], self.ability_stats['charisma'][1])
-            )
-        )
+        self.description = self.get_description()
+        self.abilities = self.get_ability_stats()
 
     def get_description(self):
         art_prompt = f'Напиши краткое художественное описание внешности и одежды для персонажа' \
@@ -32,6 +22,7 @@ class CharacterSheetBuilder:
         return description
 
     def get_ability_stats(self):
+        ability_stats = {}
         stats_prompt = f'для персонажа имеющего описание {self .get_description()} напиши силу харатеристик:' \
                        f'strength, dexterity, const, intell, wisdom, charisma.'\
                        f'Характеристики могут принимать значение от 0 до 20, ответ выведи в формате:' \
@@ -44,11 +35,20 @@ class CharacterSheetBuilder:
         if len(stats) == 6:
             for i in range(6):
                 str_prompt = stats[i].split('=')
-                self.ability_stats[str_prompt[0]] = str_prompt[1]
-            return self.ability_stats
-
+                value = int(str_prompt[1][1:])
+                bonus = (value - 10) // 2
+                ability_stats[str_prompt[0][:-1]] = [value, bonus]
         else:
             self.get_ability_stats()
+
+        abilities = AbilityStats(
+            strength=AbilityStat(ability_stats['strength'][0], ability_stats['strength'][1]),
+            dexterity=AbilityStat(ability_stats['dexterity'][0], ability_stats['dexterity'][1]),
+            constitution=AbilityStat(ability_stats['constitution'][0], ability_stats['constitution'][1]),
+            intelligence=AbilityStat(ability_stats['intelligence'][0], ability_stats['intelligence'][1]),
+            wisdom=AbilityStat(ability_stats['wisdom'][0], ability_stats['wisdom'][1]),
+            charisma=AbilityStat(ability_stats['charisma'][0], ability_stats['charisma'][1]))
+        return abilities
 
 
 load_dotenv()
@@ -58,5 +58,5 @@ user_setting = input('Введите краткое описание сетти�
 
 char_build = CharacterSheetBuilder(user_request, user_setting)
 print(char_build.get_description())
-char_build.get_ability_stats()
+print(char_build.get_ability_stats())
 
