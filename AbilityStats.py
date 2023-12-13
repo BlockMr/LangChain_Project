@@ -11,7 +11,7 @@ class AbilityStat:
 class AbilityStats:
     strength: AbilityStat
     dexterity: AbilityStat
-    const: AbilityStat
-    intell: AbilityStat
+    constitution: AbilityStat
+    intelligence: AbilityStat
     wisdom: AbilityStat
     charisma: AbilityStat
