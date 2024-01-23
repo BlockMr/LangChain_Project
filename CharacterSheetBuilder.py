@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from Character import Character
-from AbilityStats import AbilityStat, AbilityStats
+from AbilityStats import AbilityStats
+from Env_vars import env_vars
 
 
 class CharacterSheetBuilder:
@@ -22,33 +23,21 @@ class CharacterSheetBuilder:
         return description
 
     def get_ability_stats(self):
-        ability_stats = {}
-        stats_prompt = f'для персонажа имеющего описание {self .get_description()} напиши силу харатеристик:' \
-                       f'strength, dexterity, const, intell, wisdom, charisma.'\
+        abilities = AbilityStats()
+        stats_prompt = f'для персонажа имеющего описание {self.get_description()} напиши силу харатеристик:' \
+                       f'{", ".join(abilities.all_ability)}.'\
                        f'Характеристики могут принимать значение от 0 до 20, ответ выведи в формате:' \
-                       f'strength = значение' \
-                       f'dexterity = значение' \
-                       f'и так далее.'
+                       '{strength: значение, dexterity: значение, constitution: значение, intelligence: значение, ' \
+                       'wisdom: значение, charisma: значение}'
 
-        stats = self.llm.invoke(stats_prompt).content.split('\n')
-
-        if len(stats) == 6:
-            for i in range(6):
-                str_prompt = stats[i].split('=')
-                value = int(str_prompt[1][1:])
-                bonus = (value - 10) // 2
-                ability_stats[str_prompt[0][:-1]] = [value, bonus]
-        else:
-            self.get_ability_stats()
-
-        abilities = AbilityStats(
-            strength=AbilityStat(ability_stats['strength'][0], ability_stats['strength'][1]),
-            dexterity=AbilityStat(ability_stats['dexterity'][0], ability_stats['dexterity'][1]),
-            constitution=AbilityStat(ability_stats['constitution'][0], ability_stats['constitution'][1]),
-            intelligence=AbilityStat(ability_stats['intelligence'][0], ability_stats['intelligence'][1]),
-            wisdom=AbilityStat(ability_stats['wisdom'][0], ability_stats['wisdom'][1]),
-            charisma=AbilityStat(ability_stats['charisma'][0], ability_stats['charisma'][1]))
-        return abilities
+        raw_stats = eval(self.llm.invoke(stats_prompt).content)
+        pass
+        # if k != 0:
+        #     for ability_name in abilities.all_ability:
+        #         try:
+        #             setattr(abilities, ability_name, raw_stats[ability_name])
+        #         except KeyError:
+        #             return self.get_ability_stats(k - 1)
 
 
 load_dotenv()
@@ -57,6 +46,5 @@ user_request = input('Введите краткое описание персо�
 user_setting = input('Введите краткое описание сеттинга: ')
 
 char_build = CharacterSheetBuilder(user_request, user_setting)
-print(char_build.get_description())
-print(char_build.get_ability_stats())
-
+print(char_build.description)
+# print(char_build.abilities)
