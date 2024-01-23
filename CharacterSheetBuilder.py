@@ -7,30 +7,33 @@ from Env_vars import env_vars
 
 
 class CharacterSheetBuilder:
+    abilities: AbilityStats = None
+    description: str = None
+
     def __init__(self, user_request, user_setting):
         self.user_request = user_request
         self.user_setting = user_setting
         self.llm = ChatOpenAI(openai_api_key=os.environ['API_KEY_OPENAI'])
-        self.description = self.get_description()
-        self.abilities = self.get_ability_stats()
+        self.get_description()
+        self.get_ability_stats()
 
     def get_description(self):
         art_prompt = f'Напиши краткое художественное описание внешности и одежды для персонажа' \
-                    f'существующего в рамках сеттинга описываемого как {self.user_setting}' \
-                    f' используя данное краткое описание: {self.user_request}'
+                     f'существующего в рамках сеттинга описываемого как {self.user_setting}' \
+                     f' используя данное краткое описание: {self.user_request}'
         description = self.llm.invoke(art_prompt).content
-
-        return description
+        self.description = description
 
     def get_ability_stats(self):
-        abilities = AbilityStats()
-        stats_prompt = f'для персонажа имеющего описание {self.get_description()} напиши силу харатеристик:' \
-                       f'{", ".join(abilities.all_ability)}.'\
+        self.abilities = AbilityStats()
+        stats_prompt = f'для персонажа имеющего описание {self.description} напиши значение харатеристик:' \
+                       f'{", ".join(self.abilities.all_ability)}.' \
                        f'Характеристики могут принимать значение от 0 до 20, ответ выведи в формате:' \
-                       '{strength: значение, dexterity: значение, constitution: значение, intelligence: значение, ' \
-                       'wisdom: значение, charisma: значение}'
+                       '{"strength": значение, "dexterity": значение, "constitution": значение, "intelligence": значение, ' \
+                       '"wisdom": значение, "charisma": значение}'
 
         raw_stats = eval(self.llm.invoke(stats_prompt).content)
+        print(raw_stats)
         pass
         # if k != 0:
         #     for ability_name in abilities.all_ability:
@@ -47,4 +50,4 @@ user_setting = input('Введите краткое описание сетти�
 
 char_build = CharacterSheetBuilder(user_request, user_setting)
 print(char_build.description)
-# print(char_build.abilities)
+print(char_build.abilities)
