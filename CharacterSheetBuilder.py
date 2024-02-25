@@ -1,62 +1,135 @@
 import os
 from dotenv import load_dotenv
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from Character import Character
-from AbilityStats import AbilityStat, AbilityStats
+from AbilityStats import AbilityStats
+from Env_vars import env_vars
+from item import Weapon as wp
+from item import Armor as ar
+from item import Item as it
 
 
 class CharacterSheetBuilder:
+    abilities: AbilityStats = None
+    description: str = None
+    all_item: list = []
+
     def __init__(self, user_request, user_setting):
         self.user_request = user_request
         self.user_setting = user_setting
-        self.llm = ChatOpenAI(openai_api_key=os.environ['API_KEY_OPENAI'])
-        self.description = self.get_description()
-        self.abilities = self.get_ability_stats()
+        self.llm = ChatOpenAI(openai_api_key=env_vars.API_KEY_OPENAI)
+        self.get_description()
+        self.get_ability_stats()
+        self.get_weapon()
+        self.get_armor()
+        self.get_gear()
 
     def get_description(self):
         art_prompt = f'Напиши краткое художественное описание внешности и одежды для персонажа' \
-                    f'существующего в рамках сеттинга описываемого как {self.user_setting}' \
-                    f' используя данное краткое описание: {self.user_request}'
+                     f'существующего в рамках сеттинга описываемого как {self.user_setting}' \
+                     f' используя данное краткое описание: {self.user_request}'
         description = self.llm.invoke(art_prompt).content
+        self.description = description
 
-        return description
-
-    def get_ability_stats(self):
-        ability_stats = {}
-        stats_prompt = f'для персонажа имеющего описание {self .get_description()} напиши силу харатеристик:' \
-                       f'strength, dexterity, const, intell, wisdom, charisma.'\
+    def get_ability_stats(self, k=env_vars.ITER):
+        self.abilities = AbilityStats()
+        stats_prompt = f'для персонажа имеющего описание {self.description} напиши значение харатеристик:' \
+                       f'{", ".join(self.abilities.all_ability)}.' \
                        f'Характеристики могут принимать значение от 0 до 20, ответ выведи в формате:' \
-                       f'strength = значение' \
-                       f'dexterity = значение' \
-                       f'и так далее.'
+                       '{"strength": значение, "dexterity": значение, "constitution": значение,' \
+                       ' "intelligence": значение, "wisdom": значение, "charisma": значение}'
 
-        stats = self.llm.invoke(stats_prompt).content.split('\n')
+        raw_stats = eval(self.llm.invoke(stats_prompt).content)
 
-        if len(stats) == 6:
-            for i in range(6):
-                str_prompt = stats[i].split('=')
-                value = int(str_prompt[1][1:])
-                bonus = (value - 10) // 2
-                ability_stats[str_prompt[0][:-1]] = [value, bonus]
+        if k != 0:
+            for ability_name in self.abilities.all_ability:
+                try:
+                    setattr(self.abilities, ability_name, raw_stats[ability_name])
+                except KeyError or SyntaxError:
+                    return self.get_ability_stats(k - 1)
         else:
-            self.get_ability_stats()
+            return 'Произошла ошибка, повторите пожалуйста запрос'
 
-        abilities = AbilityStats(
-            strength=AbilityStat(ability_stats['strength'][0], ability_stats['strength'][1]),
-            dexterity=AbilityStat(ability_stats['dexterity'][0], ability_stats['dexterity'][1]),
-            constitution=AbilityStat(ability_stats['constitution'][0], ability_stats['constitution'][1]),
-            intelligence=AbilityStat(ability_stats['intelligence'][0], ability_stats['intelligence'][1]),
-            wisdom=AbilityStat(ability_stats['wisdom'][0], ability_stats['wisdom'][1]),
-            charisma=AbilityStat(ability_stats['charisma'][0], ability_stats['charisma'][1]))
-        return abilities
+    def weapon_selection(self):
+        selection_prompt = f'Напиши предметы которые подходят к персонажу опираясь на его богатство или бедность,' \
+                           f'сеттинг - {self.user_setting}, краткое описание - {self.user_request}, ' \
+                           f'а выбери предметы из этого списка - {wp.all_weapon}.' \
+                           f'Их количество тоже нужно сопоставить персонажу.' \
+                           f'В ответ дай только названия этих предметов списоком по типу [name, name, name]'
+
+        weapon_for_char = self.llm.invoke(selection_prompt).content
+        return eval(weapon_for_char)
+
+    def get_weapon(self, k=env_vars.ITER):
+        if k != 0:
+            try:
+                for weapon_name in self.weapon_selection():
+                    all_select = wp.all_weapon[weapon_name]
+                    self.all_item.append(wp.Weapon(weapon_name, all_select[0], all_select[1],
+                                                   all_select[3], all_select[2], all_select[4], all_select[5]))
+            except IndexError or SyntaxError:
+                return self.get_weapon(k-1)
+        else:
+            return 'Произошла ошибка, повторите пожалуйста запрос'
+
+    def armor_selection(self):
+        selection_prompt = f'Для персонажа существующего в рамках сеттинг - {self.user_setting}, ' \
+                           f'краткое описание - {self.user_request}, выбери предметы из списка {ar.all_armor}.' \
+                           f'постарайся выбрать предметы подходящие персонажу по уровню достатка и тем задачам,' \
+                           f' которые он может решать в ходе своих приключений. учти, что надеть два комплекта брони' \
+                           f' на себя он не сможет. Щит давай персонажу, только если он ему правда необходим и ' \
+                           f'подходит по краткому описанию, а так же сеттингу. ' \
+                           f'у персонажа может быть как один предмет, так и несколько.' \
+                           f' в твет напиши только названия предметов в ковычках и в []'
+
+        armor_for_char = self.llm.invoke(selection_prompt).content
+        return eval(armor_for_char)
+
+    def get_armor(self, k=env_vars.ITER):
+        if k != 0:
+            try:
+                for armor_name in self.armor_selection():
+                    all_select = ar.all_armor[armor_name]
+                    self.all_item.append(ar.Armor(armor_name, all_select[0], all_select[1],
+                                                  all_select[2], all_select[4], all_select[5],
+                                                  all_select[3], all_select[6]))
+            except IndexError or SyntaxError:
+                return self.get_armor(k-1)
+        else:
+            return 'Произошла ошибка, повторите пожалуйста запрос'
+
+    def gear_selection(self):
+        selection_prompt = f'Для персонажа существующего в рамках сеттинг - {self.user_setting}, ' \
+                           f'краткого описания {self.user_request}, выбери предметы из списка {it.all_gear}' \
+                           f'Выбирая опирайся на его богатство или бедность, и количество предметов' \
+                           f'тоже сопоставь персонажу. В ответ выдай в таком формате: [name, name].'
+
+        gear_for_char = self.llm.invoke(selection_prompt).content
+        return eval(gear_for_char)
+
+    def get_gear(self, k=env_vars.ITER):
+        if k != 0:
+            try:
+                for gear_name in self.gear_selection():
+                    all_select = it.all_gear[gear_name]
+                    self.all_item.append(it.Item(gear_name, all_select[0], all_select[1], all_select[2]))
+            except IndexError or SyntaxError:
+                return self.get_gear(k - 1)
+        else:
+            return 'Произошла ошибка, повторите пожалуйста запрос'
 
 
 load_dotenv()
 
-user_request = input('Введите краткое описание персонажа: ')
-user_setting = input('Введите краткое описание сеттинга: ')
+# user_request = input('Введите краткое описание персонажа: ')
+# user_setting = input('Введите краткое описание сеттинга: ')
 
-char_build = CharacterSheetBuilder(user_request, user_setting)
-print(char_build.get_description())
-print(char_build.get_ability_stats())
-
+char_build = CharacterSheetBuilder(
+    user_request='мальчик томас - малолетний воришка из нижней части города. не самый искусный вор, зато мелкий'
+                 ' и юркий, что помогает ему выходить сухим из воды',
+    user_setting='киберпанк'
+)
+print(char_build.description + '\n')
+# print(char_build.armor_selection())
+for object_item in char_build.all_item:
+    print(object_item)
