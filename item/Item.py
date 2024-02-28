@@ -106,11 +106,3 @@ all_gear = {
   "Wooden Staff": ["5 cp", "4 lb.", "A simple wooden staff that can be used as a weapon or walking aid."],
   "Yew Wand": ["10 gp", "", "A wand made from yew wood, used by spellcasters to channel magical energies."]
 }
-
-
-# from langchain_openai import ChatOpenAI
-# llm = ChatOpenAI(openai_api_key='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')
-# s = "Используя сайт https://roll20.net/compendium/dnd5e/Armor#content создай словарь в таком формате:" \
-#     "{'name': ['price', 'Weight', 'Armor Class', 'Strength', 'Stealth', 'brief description']}, все параметры напиши с размерность." \
-#     "brief description'тоже возьми с сайта"
-# print(llm.invoke(s).content)
