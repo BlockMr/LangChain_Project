@@ -16,7 +16,7 @@ class Skills:
     nature: int
     perception: int
     perfomance: int
-    pesuasion: int
+    persuasion: int
     religion: int
     sleight_of_hand: int
     stealth: int
