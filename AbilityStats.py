@@ -15,6 +15,9 @@ class AbilityStat:
         self._value = new_value
         self._bonus = (new_value - 10) // 2
 
+    def __str__(self):
+        return f"value = {self.value}, bonus = {self.bonus}"
+
 
 class AbilityStats:
     _strength: AbilityStat = AbilityStat()
@@ -72,3 +75,10 @@ class AbilityStats:
     @charisma.setter
     def charisma(self, new_value):
         self._charisma.value = new_value
+
+    def __str__(self):
+        attributes = []
+        for name in dir(self):
+            if name.startswith('_') and not name.endswith('_'):
+                attributes.append(f"{name}: {str(getattr(self, name))}")
+        return '; '.join(attributes)

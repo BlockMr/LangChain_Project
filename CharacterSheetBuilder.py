@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from Character import Character
+from Character import Character as char
 from AbilityStats import AbilityStats
 from Env_vars import env_vars
 from item import Weapon as wp
@@ -13,16 +13,19 @@ class CharacterSheetBuilder:
     abilities: AbilityStats = None
     description: str = None
     all_item: list = []
+    char_class: str = None
+    race: str = None
 
     def __init__(self, user_request, user_setting):
         self.user_request = user_request
         self.user_setting = user_setting
         self.llm = ChatOpenAI(openai_api_key=env_vars.API_KEY_OPENAI)
         self.get_description()
+        # self.get_weapon()
+        # self.get_armor()
+        # self.get_gear()
+        self.get_char_class_race()
         self.get_ability_stats()
-        self.get_weapon()
-        self.get_armor()
-        self.get_gear()
 
     def get_description(self):
         art_prompt = f'Напиши краткое художественное описание внешности и одежды для персонажа' \
@@ -30,25 +33,6 @@ class CharacterSheetBuilder:
                      f' используя данное краткое описание: {self.user_request}'
         description = self.llm.invoke(art_prompt).content
         self.description = description
-
-    def get_ability_stats(self, k=env_vars.ITER):
-        self.abilities = AbilityStats()
-        stats_prompt = f'для персонажа имеющего описание {self.description} напиши значение харатеристик:' \
-                       f'{", ".join(self.abilities.all_ability)}.' \
-                       f'Характеристики могут принимать значение от 0 до 20, ответ выведи в формате:' \
-                       '{"strength": значение, "dexterity": значение, "constitution": значение,' \
-                       ' "intelligence": значение, "wisdom": значение, "charisma": значение}'
-
-        raw_stats = eval(self.llm.invoke(stats_prompt).content)
-
-        if k != 0:
-            for ability_name in self.abilities.all_ability:
-                try:
-                    setattr(self.abilities, ability_name, raw_stats[ability_name])
-                except KeyError or SyntaxError:
-                    return self.get_ability_stats(k - 1)
-        else:
-            return 'Произошла ошибка, повторите пожалуйста запрос'
 
     def weapon_selection(self):
         selection_prompt = f'Напиши предметы которые подходят к персонажу опираясь на его богатство или бедность,' \
@@ -118,6 +102,39 @@ class CharacterSheetBuilder:
         else:
             return 'Произошла ошибка, повторите пожалуйста запрос'
 
+    def get_char_class_race(self, k=env_vars.ITER):
+        all_prompt = f'Выбери для персонажа, с кратким описание - {self.user_request} и находящегося в рамках' \
+                     f'сеттинга - {self.user_setting}, расу из списка {char.char_race_abil.keys()}' \
+                     f' и класс из списка {char.char_class_skill.keys()}, ответ дай в таком формате: ["race", "class"]'
+
+        char_race_class = eval(self.llm.invoke(all_prompt).content)
+        self.race = char_race_class[0]
+        self.char_class = char_race_class[1]
+
+    def get_ability_stats(self, k=env_vars.ITER):
+        self.abilities = AbilityStats()
+        stats_prompt = f'для персонажа имеющего описание {self.description} напиши значение харатеристик:' \
+                       f'{", ".join(self.abilities.all_ability)}.' \
+                       f'Характеристики могут принимать значение от 0 до 20, ответ выведи в формате:' \
+                       '{"strength": значение, "dexterity": значение, "constitution": значение,' \
+                       ' "intelligence": значение, "wisdom": значение, "charisma": значение}'
+
+        raw_stats = eval(self.llm.invoke(stats_prompt).content)
+        bonus = char.char_race_abil[self.race]
+        print(raw_stats)
+        print(bonus)
+
+        if k != 0:
+            for ability_name in self.abilities.all_ability:
+                for bonus_name in bonus:
+                    if ability_name == bonus_name:
+                        try:
+                            setattr(self.abilities, '_' + ability_name, (raw_stats[ability_name] + bonus[ability_name]))
+                        except KeyError or SyntaxError:
+                            return self.get_ability_stats(k - 1)
+        else:
+            return 'Произошла ошибка, повторите пожалуйста запрос'
+
 
 load_dotenv()
 
@@ -129,7 +146,8 @@ char_build = CharacterSheetBuilder(
                  ' и юркий, что помогает ему выходить сухим из воды',
     user_setting='киберпанк'
 )
-print(char_build.description + '\n')
+# print(char_build.description + '\n')
 # print(char_build.armor_selection())
-for object_item in char_build.all_item:
-    print(object_item)
+# for object_item in char_build.all_item:
+#     print(object_item)
+print(char_build.abilities)
