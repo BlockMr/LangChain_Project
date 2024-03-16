@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from Character import Character as char
-from AbilityStats import AbilityStats
+from AbilityStats import AbilityStats, AbilityStat
 from Env_vars import env_vars
 from item import Weapon as wp
 from item import Armor as ar
@@ -129,9 +129,14 @@ class CharacterSheetBuilder:
                 for bonus_name in bonus:
                     if ability_name == bonus_name:
                         try:
-                            setattr(self.abilities, '_' + ability_name, (raw_stats[ability_name] + bonus[ability_name]))
+                            stat = AbilityStat()
+                            stat.value = raw_stats[ability_name] + bonus[ability_name]
+                            setattr(self.abilities, '_' + ability_name, stat)
                         except KeyError or SyntaxError:
                             return self.get_ability_stats(k - 1)
+                stat = AbilityStat()
+                stat.value = raw_stats[ability_name]
+                setattr(self.abilities, '_' + ability_name, stat)
         else:
             return 'Произошла ошибка, повторите пожалуйста запрос'
 
