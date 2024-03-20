@@ -31,5 +31,3 @@ class Env_vars(object):
 
 
 env_vars = Env_vars()
-env_vars.ITER = 2
-env_vars.API_KEY_OPENAI = 'Ваш ключ'
