@@ -42,11 +42,11 @@ class Character:
     char_class_skill = {
         # выбрать 2 из:
         'Barbarian': {('animal_handling', 'athletics', 'intimidation', 'nature', 'perception', 'survival'): 2},
-        # выбрать любые 3
+        # вбрать 3 из:
         'Bard': {('acrobatics', 'animal_handling', 'arcana', 'athletics', 'deception', 'history', 'insight',
                   'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion',
                   'religion', 'sleight_of_hand', 'stealth', 'survival'): 3},
-        # выбрать два из:
+        # выбрать 2 из:
         'Cleric': {('history', 'insight', 'medicine', 'persuasion', 'religion'): 2},
         # выбрать 2 из:
         'Druid': {('arcana', 'animal_handling', 'insight', 'medicine', 'nature', 'perception', 'religion', 'survival'): 2},
@@ -83,8 +83,3 @@ class Character:
         # 2 из:
         'Half-Elf': {'charisma': 2, ('strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'): 1}
     }
-
-    # race_one_boost = {'Elf': _dexterity, 'Dwarf': _constitution, 'Halfling': _dexterity, 'Gnome': _intelligence}
-    # race_two_boost = {'Dragonborn': [_strength, _charisma], 'Half-Orc': [_strength, _constitution],
-    #                   'Tiefling': [_intelligence, _charisma]}
-    # race_myster = ['Human', 'Half-Elf']
