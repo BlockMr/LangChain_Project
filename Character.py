@@ -10,11 +10,11 @@ class Character:
     name: str
     char_class: str
     level: int
-    race: str
+    char_race: str
     background: str
     pl_name: str
     alignment: Literal['LG', 'LN', 'LV',
-                       'NG', 'N', 'NV',
+                       'NG', 'TN', 'NV',
                        'CG', 'CN', 'CV']
     exp_points: int
     inspiration: int
@@ -22,7 +22,6 @@ class Character:
     armor_class: int
     initiative: int
     speed: int
-    initiative: int
     cur_hit_points: int
     temp_hit_points: int
     hit_dice: int

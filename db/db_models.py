@@ -1,10 +1,9 @@
 from Env_vars import env_vars
-from typing import Annotated, Literal
+from typing import Annotated
 from sqlalchemy import create_engine, String, Column, BigInteger, ARRAY, ForeignKey, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationships
 from sqlalchemy.orm import sessionmaker
 import enum
-
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
 
@@ -133,10 +132,10 @@ class AbilityStats(Base):
     charisma: Mapped[str]
 
 
-class Items(Base):
-    __tablename__ = 'items'
+class Gears(Base):
+    __tablename__ = 'gears'
 
-    item_id: Mapped[intpk]
+    gear_id: Mapped[intpk]
     name: Mapped[str]
     price: Mapped[str]
     weight: Mapped[str]
@@ -148,7 +147,7 @@ class Char_items(Base):
 
     char_item_id: Mapped[intpk]
     char_id: Mapped[int] = mapped_column(ForeignKey('characters.char_id'))
-    item_id: Mapped[int] = mapped_column(ForeignKey('items.item_id'))
+    item_id: Mapped[int] = mapped_column(ForeignKey('gears.gear_id'))
 
 
 class Armors(Base):
@@ -198,6 +197,11 @@ class Char_weapons(Base):
 engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@localhost/{env_vars.DB_NAME}')
 Base.metadata.create_all(bind=engine)
 
-# Session = sessionmaker(bind=engine)
-# session = Session()
+Session = sessionmaker(bind=engine)
+session = Session()
 
+
+# создать отдельный документ где буду прописаны все методы взимодействия с бд
+# делать не бекап, а написать скрипт который на старте вгружает данные в бд
+# сделать файл со всей инфой о предметах и тд, соответственно пофиксить классы и чаршит от списков
+# после правильного заполнения бд и всех проверок, прописать методы взаимодействия чаршита и бд
