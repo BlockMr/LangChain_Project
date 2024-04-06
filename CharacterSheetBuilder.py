@@ -7,6 +7,8 @@ from item import Weapon as wp
 from item import Armor as ar
 from item import Item as it
 from Skills import Skills
+from db.db_methods import get_all_weapons_name, get_all_armors_name, get_all_gears_name
+from db.db_methods import get_gear, get_armor, get_weapon
 
 
 class CharacterSheetBuilder:
@@ -39,7 +41,7 @@ class CharacterSheetBuilder:
     def weapon_prompt(self):
         selection_prompt = f'Напиши предметы которые подходят к персонажу опираясь на его богатство или бедность,' \
                            f'и краткое описание - {self.description}, ' \
-                           f'а выбери предметы пожалуйста только из этого списка - {wp.all_weapon}. Не из этого списка' \
+                           f'а выбери предметы пожалуйста только из этого списка - {get_all_weapons_name()}. Не из этого списка' \
                            f'предметы не предлагай' \
                            f'Их количество тоже нужно сопоставить персонажу.' \
                            f'В ответ дай только названия этих предметов списоком по типу [name, name, name]'
@@ -50,16 +52,17 @@ class CharacterSheetBuilder:
 
     def weapon_selection(self, iter=int(env_vars.ITER)):
         all_weapon = self.weapon_prompt()
+        weapons_name = get_all_weapons_name()
 
         for name in all_weapon:
-            if name not in wp.all_weapon:
+            if name not in weapons_name:
                 all_weapon.remove(name)
 
         for num_iter in range(iter):
             if len(all_weapon) == 0:
                 all_weapon = self.weapon_prompt()
                 for name in all_weapon:
-                    if name not in wp.all_weapon:
+                    if name not in weapons_name:
                         all_weapon.remove(name)
                 if len(all_weapon) != 0:
                     return all_weapon
@@ -73,13 +76,13 @@ class CharacterSheetBuilder:
 
     def get_weapon(self):
         for weapon_name in self.weapon_selection():
-            all_select = wp.all_weapon[weapon_name]
-            self.all_item.append(wp.Weapon(weapon_name, all_select[0], all_select[1],
-                                           all_select[3], all_select[2], all_select[4], all_select[5]))
+            all_inf = get_weapon(weapon_name)
+            self.all_item.append(wp.Weapon(weapon_name, all_inf[0], all_inf[1],
+                                           all_inf[3], all_inf[2], all_inf[4], all_inf[5]))
 
     def armor_prompt(self):
         selection_prompt = f'Для персонажа с кратким описанием - {self.description},' \
-                           f' выбери предметы из списка {ar.all_armor}.' \
+                           f' выбери предметы из списка {get_all_armors_name()}.' \
                            f'постарайся выбрать предметы подходящие персонажу по уровню достатка и тем задачам,' \
                            f' которые он может решать в ходе своих приключений. учти, что надеть два комплекта брони' \
                            f' на себя он не сможет. Щит давай персонажу, только если он ему правда необходим и ' \
@@ -95,14 +98,14 @@ class CharacterSheetBuilder:
         all_armor = self.armor_prompt()
 
         for name in all_armor:
-            if name not in ar.all_armor:
+            if name not in get_all_armors_name():
                 all_armor.remove(name)
 
         for num_iter in range(iter):
             if len(all_armor) == 0:
                 all_armor = self.armor_prompt()
                 for name in all_armor:
-                    if name not in ar.all_armor:
+                    if name not in get_all_armors_name():
                         all_armor.remove(name)
                 if len(all_armor) != 0:
                     return all_armor
@@ -116,18 +119,18 @@ class CharacterSheetBuilder:
 
     def get_armor(self):
         for armor_name in self.armor_selection():
-            all_select = ar.all_armor[armor_name]
+            all_select = get_armor(armor_name)
             self.all_item.append(ar.Armor(armor_name, all_select[0], all_select[1],
                                           all_select[2], all_select[4], all_select[5],
                                           all_select[3], all_select[6]))
 
     def gear_prompt(self):
         selection_prompt = f'Для персонажа имеющего краткое описание {self.description}, выбери только из списка ' \
-                           f'{list(it.all_gear.keys())} предметы, опираясь на его богатство или бедность, ' \
+                           f'{get_all_gears_name()} предметы, опираясь на его богатство или бедность, ' \
                            f'количетсво предметов тоже сопоставь персонажу. Вот так дай ответ - ["name", "name"], ' \
-                           f'name возми в точности из списка {list(it.all_gear.keys())}.' \
+                           f'name возми в точности из списка {get_all_gears_name()}.' \
                            f'Еще раз убедись пожалуйста в том, что предметы или предмет, который ты выбрал, 100% ' \
-                           f'находится в списке {list(it.all_gear.keys())}, если нет, то выберай только из него, ' \
+                           f'находится в списке {get_all_gears_name()}, если нет, то выберай только из него, ' \
                            f'пожалуйста'
 
         gear_for_char = eval(self.llm.invoke(selection_prompt).content)
@@ -138,14 +141,14 @@ class CharacterSheetBuilder:
         all_gear = self.gear_prompt()
 
         for name in all_gear:
-            if name not in it.all_gear:
+            if name not in get_all_gears_name():
                 all_gear.remove(name)
 
         for num_iter in range(iter):
             if len(all_gear) == 0:
                 all_gear = self.gear_prompt()
                 for name in all_gear:
-                    if name not in it.all_gear:
+                    if name not in get_all_gears_name():
                         all_gear.remove(name)
                 if len(all_gear) != 0:
                     return all_gear
@@ -159,7 +162,7 @@ class CharacterSheetBuilder:
 
     def get_gear(self):
         for gear_name in self.gear_selection():
-            all_select = it.all_gear[gear_name]
+            all_select = get_gear(gear_name)
             self.all_item.append(it.Item(gear_name, all_select[0], all_select[1], all_select[2]))
 
     def char_class_race_prompt(self):
@@ -267,7 +270,6 @@ class CharacterSheetBuilder:
                     setattr(self.abilities, '_' + ability_name, stat)
 
     def bonus_skills_prompt(self):
-        self.skills = Skills()
         choice_skills_prompt = f'Для персонажа, имеющего описание {self.description} выбери ' \
                                f'{char.char_class_skill[self.char_class].values()} харатеристики из ' \
                                f'{list(char.char_class_skill[self.char_class].keys())}, которые с ' \
@@ -295,16 +297,24 @@ class CharacterSheetBuilder:
                     continue
 
         if len(bonus_skills) == 0:
-            return 'Подобрать Gear не удалось', quit()
+            return 'Подобрать Bonus_skills не удалось', quit()
         else:
             return bonus_skills
 
     def get_skills(self):
         self.skills = Skills()
+        all_skills = {'acrobatics': 'dexterity', 'animal_handling': 'wisdom', 'arcana': 'intelligence',
+                      'athletics': 'strength', 'deception': 'charisma', 'history': 'intelligence', 'insight': 'wisdom',
+                      'intimidation': 'charisma', 'investigation': 'intelligence', 'medicine': 'wisdom',
+                      'nature': 'intelligence', 'perception': 'wisdom', 'performance': 'charisma',
+                      'persuasion': 'charisma',
+                      'religion': 'intelligence', 'sleight_of_hand': 'dexterity', 'stealth': 'dexterity',
+                      'survival': 'wisdom'}
+
         bonus_skills = self.bonus_skills_selection()
-        for skills_name in self.skills.all_skills.keys():
+        for skills_name in all_skills.keys():
             for bonus_skills_name in bonus_skills:
-                value = getattr(self.abilities, '_' + self.skills.all_skills[skills_name])
+                value = getattr(self.abilities, '_' + all_skills[skills_name])
                 if bonus_skills_name == skills_name:
                     setattr(self.skills, skills_name, value.value + 2)
                 else:
@@ -317,9 +327,10 @@ load_dotenv()
 # user_setting = input('Введите краткое описание сеттинга: ')
 
 char_build = CharacterSheetBuilder(
-    user_request='Аватар маг',
-    user_setting='История игрушек'
+    user_request='лунтик',
+    user_setting='русский мультик про лунтика который свалился с луны'
 )
+
 if char_build.description and char_build.char_class and char_build.char_race \
         and char_build.abilities and char_build.skills and char_build.all_item is not None:
     print(f"Краткое описание персонажа: \n{char_build.description}\n"

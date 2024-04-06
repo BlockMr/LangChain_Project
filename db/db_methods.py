@@ -1,5 +1,5 @@
 from item.all_item import all_armor, all_gear, all_weapon
-from db_models import session, Gears, Armors, Weapons, session, text
+from db.db_models import Gears, Armors, Weapons, session, text
 
 
 def add_gear(id, name, price, weight, description):
@@ -112,4 +112,22 @@ def get_all_gears_name():
     return all_name
 
 
+def get_weapon(name):
+    with session as db:
+        res = db.execute(text('SELECT * FROM weapons WHERE name = :weapon_name'), {'weapon_name': name})
+    all_inf = res.all()[0]
+    return all_inf
 
+
+def get_gear(name):
+    with session as db:
+        res = db.execute(text('SELECT * FROM gears WHERE name = :gear_name'), {'gear_name': name})
+    all_inf = res.all()[0]
+    return all_inf
+
+
+def get_armor(name):
+    with session as db:
+        res = db.execute(text('SELECT * FROM armors where name = :armor_name'), {'armor_name': name})
+    all_inf = res.all()[0]
+    return all_inf
