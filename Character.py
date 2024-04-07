@@ -37,39 +37,26 @@ class Character:
     abilities: AbilityStats
     skills: Skills
     spells: list[Spell]
-    # значением сделать список из списка скилов и количества выбора, что бы сделатьь промпт легче
+
     char_class_skill = {
-        # выбрать 2 из:
         'Barbarian': {('animal_handling', 'athletics', 'intimidation', 'nature', 'perception', 'survival'): 2},
-        # вбрать 3 из:
         'Bard': {('acrobatics', 'animal_handling', 'arcana', 'athletics', 'deception', 'history', 'insight',
                   'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion',
                   'religion', 'sleight_of_hand', 'stealth', 'survival'): 3},
-        # выбрать 2 из:
         'Cleric': {('history', 'insight', 'medicine', 'persuasion', 'religion'): 2},
-        # выбрать 2 из:
         'Druid': {('arcana', 'animal_handling', 'insight', 'medicine', 'nature', 'perception', 'religion', 'survival'): 2},
-        # выбрать 2 из:
         'Fighter': {('acrobatics', 'animal_handling', 'athletics', 'history', 'insight', 'intimidation', 'perception'): 2},
-        # выбрать 2 из:
         'Monk': {('acrobatics', 'athletics', 'history', 'insight', 'religion', 'stealth'): 2},
-        # выбрать 2 из:
         'Paladin': {('athletics', 'medicine', 'insight', 'intimidation', 'persuasion', 'religion'): 2},
-        # выбрать 3 из:
         'Ranger': {('animal_handling', 'athletics', 'insight', 'investigation', 'nature', 'perception', 'stealth',
                    'survival'): 3},
-        # выбрать 4 из:
         'Rogue': {('acrobatics', 'athletics', 'deception', 'insight', 'intimidation', 'investigation', 'perception',
                   'perfomance', 'persuasion', 'sleight_of_hand', 'stealth'): 4},
-        # выбрать 2 из:
         'Sorcerer': {('arcana', 'deception', 'insight', 'intimidation', 'persuasion', 'religion'): 2},
-        # выбрать 2 из:
         'Warlock': {('arcana', 'deception', 'history', 'intimidation', 'investigation', 'nature', 'religion'): 2},
-        # выбрать 2 из:
         'Wizard': {('arcana', 'history', 'insight', 'investigation', 'medicine', 'religion'): 2}
     }
-    # расса: {что увеличивается: на что увеличивается}
-    # у полуэльфа харизма на 2, а два других любых из списка на 1
+
     char_race_abil = {
         'Elf': {'dexterity': 2},
         'Dwarf': {'constitution': 2},
