@@ -10,11 +10,11 @@ class Character:
     name: str
     char_class: str
     level: int
-    race: str
+    char_race: str
     background: str
     pl_name: str
     alignment: Literal['LG', 'LN', 'LV',
-                       'NG', 'N', 'NV',
+                       'NG', 'TN', 'NV',
                        'CG', 'CN', 'CV']
     exp_points: int
     inspiration: int
@@ -22,7 +22,6 @@ class Character:
     armor_class: int
     initiative: int
     speed: int
-    initiative: int
     cur_hit_points: int
     temp_hit_points: int
     hit_dice: int
@@ -39,6 +38,34 @@ class Character:
     skills: Skills
     spells: list[Spell]
 
-    def __str__(self):
-        pass
+    char_class_skill = {
+        'Barbarian': {('animal_handling', 'athletics', 'intimidation', 'nature', 'perception', 'survival'): 2},
+        'Bard': {('acrobatics', 'animal_handling', 'arcana', 'athletics', 'deception', 'history', 'insight',
+                  'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion',
+                  'religion', 'sleight_of_hand', 'stealth', 'survival'): 3},
+        'Cleric': {('history', 'insight', 'medicine', 'persuasion', 'religion'): 2},
+        'Druid': {('arcana', 'animal_handling', 'insight', 'medicine', 'nature', 'perception', 'religion', 'survival'): 2},
+        'Fighter': {('acrobatics', 'animal_handling', 'athletics', 'history', 'insight', 'intimidation', 'perception'): 2},
+        'Monk': {('acrobatics', 'athletics', 'history', 'insight', 'religion', 'stealth'): 2},
+        'Paladin': {('athletics', 'medicine', 'insight', 'intimidation', 'persuasion', 'religion'): 2},
+        'Ranger': {('animal_handling', 'athletics', 'insight', 'investigation', 'nature', 'perception', 'stealth',
+                   'survival'): 3},
+        'Rogue': {('acrobatics', 'athletics', 'deception', 'insight', 'intimidation', 'investigation', 'perception',
+                  'perfomance', 'persuasion', 'sleight_of_hand', 'stealth'): 4},
+        'Sorcerer': {('arcana', 'deception', 'insight', 'intimidation', 'persuasion', 'religion'): 2},
+        'Warlock': {('arcana', 'deception', 'history', 'intimidation', 'investigation', 'nature', 'religion'): 2},
+        'Wizard': {('arcana', 'history', 'insight', 'investigation', 'medicine', 'religion'): 2}
+    }
 
+    char_race_abil = {
+        'Elf': {'dexterity': 2},
+        'Dwarf': {'constitution': 2},
+        'Halfling': {'dexterity': 2},
+        'Gnome': {'intelligence': 2},
+        'Dragonborn': {'strength': 2, 'charisma': 1},
+        'Half-Orc': {'strength': 2, 'constitution': 1},
+        'Tiefling': {'charisma': 2, 'intelligence': 1},
+        'Human': {'strength': 1, 'dexterity': 1, 'constitution': 1, 'intelligence': 1, 'wisdom': 1, 'charisma': 1},
+        # 2 из:
+        'Half-Elf': {'charisma': 2, ('strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'): 1}
+    }
