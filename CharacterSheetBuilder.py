@@ -7,8 +7,9 @@ from item import Weapon as wp
 from item import Armor as ar
 from item import Item as it
 from Skills import Skills
-from db.db_methods import get_all_weapons_name, get_all_armors_name, get_all_gears_name
-from db.db_methods import get_gear, get_armor, get_weapon
+from spells.Spell import Spell
+from db.db_methods import get_all_weapons_name, get_all_armors_name, get_all_gears_name, get_all_spells_name
+from db.db_methods import get_gear, get_armor, get_weapon, get_spell
 
 
 class CharacterSheetBuilder:
@@ -18,6 +19,7 @@ class CharacterSheetBuilder:
     char_class: str = None
     char_race: str = None
     skills: Skills = None
+    spells: list = []
 
     def __init__(self, user_request, user_setting):
         self.user_request = user_request
@@ -30,11 +32,13 @@ class CharacterSheetBuilder:
         self.get_char_class_race()
         self.get_ability_stats()
         self.get_skills()
+        self.get_spells()
 
     def get_description(self):
         art_prompt = f'Напиши краткое художественное описание внешности и одежды для персонажа' \
-                     f'существующего в рамках сеттинга описываемого как {self.user_setting}' \
-                     f' используя данное краткое описание: {self.user_request}'
+                     f'существующего в рамках сеттинга описываемого как {self.user_setting} ' \
+                     f'используя данное краткое описание: {self.user_request}, пожалуйста, обрати внимание на ' \
+                     f'на все детали которые мог указать пользователь в запросе.'
         description = self.llm.invoke(art_prompt).content
         self.description = description
 
@@ -77,18 +81,16 @@ class CharacterSheetBuilder:
     def get_weapon(self):
         for weapon_name in self.weapon_selection():
             all_inf = get_weapon(weapon_name)
-            self.all_item.append(wp.Weapon(weapon_name, all_inf[0], all_inf[1],
-                                           all_inf[3], all_inf[2], all_inf[4], all_inf[5]))
+            self.all_item.append(wp.Weapon(all_inf[0], all_inf[1], all_inf[2],
+                                           all_inf[3], all_inf[4], all_inf[5], all_inf[6]))
 
     def armor_prompt(self):
-        selection_prompt = f'Для персонажа с кратким описанием - {self.description},' \
-                           f' выбери предметы из списка {get_all_armors_name()}.' \
-                           f'постарайся выбрать предметы подходящие персонажу по уровню достатка и тем задачам,' \
-                           f' которые он может решать в ходе своих приключений. учти, что надеть два комплекта брони' \
-                           f' на себя он не сможет. Щит давай персонажу, только если он ему правда необходим и ' \
-                           f'подходит по краткому описанию, а так же сеттингу. ' \
-                           f'у персонажа может быть как один предмет, так и несколько.' \
-                           f' в твет напиши только названия предметов в ковычках и в []'
+        selection_prompt = f"Из списка {get_all_armors_name()} выбери армор для персонажа имеющего описание: " \
+                           f"{self.description}" \
+                           f"постарайся выбрать предметы подходящие персонажу по уровню достатка и тем задачам," \
+                           f" которые он может решать в ходе своих приключений. учти, что надеть два комплекта" \
+                           f" брони на себя он не сможет." \
+                           f"Ответ дай в виде списка - ['name', 'name', 'name']"
 
         armor_for_char = eval(self.llm.invoke(selection_prompt).content)
 
@@ -119,10 +121,9 @@ class CharacterSheetBuilder:
 
     def get_armor(self):
         for armor_name in self.armor_selection():
-            all_select = get_armor(armor_name)
-            self.all_item.append(ar.Armor(armor_name, all_select[0], all_select[1],
-                                          all_select[2], all_select[4], all_select[5],
-                                          all_select[3], all_select[6]))
+            all_inf = get_armor(armor_name)
+            self.all_item.append(ar.Armor(all_inf[0], all_inf[1], all_inf[3], all_inf[3],
+                                          all_inf[4], all_inf[5], all_inf[6], all_inf[7]))
 
     def gear_prompt(self):
         selection_prompt = f'Для персонажа имеющего краткое описание {self.description}, выбери только из списка ' \
@@ -162,13 +163,13 @@ class CharacterSheetBuilder:
 
     def get_gear(self):
         for gear_name in self.gear_selection():
-            all_select = get_gear(gear_name)
-            self.all_item.append(it.Item(gear_name, all_select[0], all_select[1], all_select[2]))
+            all_inf = get_gear(gear_name)
+            self.all_item.append(it.Item(all_inf[0], all_inf[1], all_inf[2], all_inf[3]))
 
     def char_class_race_prompt(self):
         all_prompt = f'Выбери для персонажа, с кратким описание - {self.user_request} и находящегося в рамках' \
                      f'сеттинга - {self.user_setting}, расу из списка {char.char_race_abil.keys()}' \
-                     f' и класс из списка {char.char_class_skill.keys()}, ответ дай в таком формате: ["race", "class"]'
+                     f' и класс из списка {char.char_class_skill.keys()}, ы ответ дай толькоо список - ["race", "class"]'
 
         char_race_class = eval(self.llm.invoke(all_prompt).content)
 
@@ -320,6 +321,90 @@ class CharacterSheetBuilder:
                 else:
                     setattr(self.skills, skills_name, value.value)
 
+    def spell_prompt(self):
+        all_spells_for_class = {
+            'Bard': (
+                ['Dancing Lights', 'Light', 'Mage Hand', 'Mending', 'Message', 'Minor Illusion', 'Prestidigitation',
+                 'True Strike', 'Vicious Mockery'],
+                ['Animal Friendship', 'Bane', 'Charm Person', 'Comprehend Languages',
+                 'Cure Wounds', 'Detect Magic', 'Disguise Self', 'Faerie Fire', 'Feather Fall', 'Healing Word',
+                 'Heroism',
+                 'Identify', 'Illusory Script', 'Longstrider', 'Silent Image', 'Sleep', 'Speak with Animals',
+                 'Thunderwave', 'Unseen Servant']),
+            'Cleric': (
+                ["Guidance", "Light", "Mending", "Resistance", "Sacred Flame", "Spare the Dying", "Thaumaturgy"],
+                ["Bane", "Bless", "Command", "Create or Destroy Water", "Cure Wounds", "Detect Evil and Good",
+                 "Detect Magic", "Detect Poison and Disease", "Guiding Bolt", "Healing Word", "Inflict Wounds",
+                 "Protection from Evil and Good", "Purify Food and Drink", "Sanctuary", "Shield of Faith"]),
+            'Druid': (
+                ["Druidcraft", "Guidance", "Mending", "Poison Spray", "Produce Flame", "Resistance", "Shillelagh"],
+                ["Animal Friendship", "Charm Person", "Create or Destroy Water", "Cure Wounds", "Detect Magic",
+                 "Detect Poison and Disease", "Entangle", "Faerie Fire", "Fog Cloud", "Goodberry", "Healing Word",
+                 "Jump", "Longstrider", "Purify Food and Drink", "Speak with Animals", "Thunderwave"]),
+            'Sorcerer': (
+                ["Acid Splash", "Chill Touch", "Dancing Lights", "Fire Bolt", "Light", "Mage Hand",
+                 "Mending", "Message", "Minor Illusion", "Poison Spray", "Prestidigitation", "Ray of Frost",
+                 "Shocking Grasp",
+                 "True Strike"],
+                ["Burning Hands", "Charm Person", "Color Spray", "Comprehend Languages",
+                 "Detect Magic", "Disguise Self", "Expeditious Retreat", "False Life", "Feather Fall",
+                 "Fog Cloud",
+                 "Jump", "Mage Armor", "Magic Missile", "Ray of Sickness", "Shield", "Silent Image", "Sleep"]),
+            'Warlock': (
+                ["Chill Touch", "Eldritch Blast", "Mage Hand", "Minor Illusion", "Poison Spray", "Prestidigitation",
+                 "True Strike"],
+                ["Charm Person", "Comprehend Languages", "Expeditious Retreat", "Hellish Rebuke", "Illusory Script",
+                 "Protection from Evil and Good", "Unseen Servant"]),
+            'Wizard': (
+                ["Acid Splash", "Chill Touch", "Dancing Lights", "Fire Bolt", "Light", "Mage Hand", "Mending",
+                 "Message",
+                 "Minor Illusion", "Poison Spray", "Prestidigitation", "Ray of Frost", "Shocking Grasp", "True Strike"],
+                ["Alarm", "Burning Hands", "Charm Person", "Color Spray", "Comprehend Languages", "Detect Magic",
+                 "Disguise Self", "Expeditious Retreat", "False Life", "Feather Fall", "Fog Cloud", "Find Familiar",
+                 "Grease", "Identify", "Illusory Script", "Jump", "Longstrider", "Mage Armor", "Magic Missile",
+                 "Protection from Evil and Good", "Shield", "Silent Image", "Sleep", "Thunderwave", "Unseen Servant"])
+        }
+        num_cantrips_and_spells = {
+            'Bard': [2, 4],
+            'Cleric': [3, 2],
+            'Druid': [2, 2],
+            'Sorcerer': [4, 2],
+            'Warlock': [2, 2],
+            'Wizard': [3, 2]
+        }
+        if self.char_class in list(all_spells_for_class.keys()):
+            choice_spells_prompt = f"Для персонажа, с кратким описанием - {self.description}, выбери " \
+                                   f"{num_cantrips_and_spells[self.char_class][0]} разных заговора из списка: " \
+                                   f"{all_spells_for_class[self.char_class][0]}, и " \
+                                   f"{num_cantrips_and_spells[self.char_class][1]} разных заклинания из списка: " \
+                                   f"{all_spells_for_class[self.char_class][1]}. " \
+                                   f"В ответ напиши все выбранные заговоры и заклинания в один список вот так - " \
+                                   f"['name', 'name', 'name']"
+
+            all_spells = eval(self.llm.invoke(choice_spells_prompt).content)
+
+            return all_spells
+
+    def spells_selection(self, iter=int(env_vars.ITER)):
+        num_cantrips_and_spells = {
+            'Bard': [2, 4],
+            'Cleric': [3, 2],
+            'Druid': [2, 2],
+            'Sorcerer': [4, 2],
+            'Warlock': [2, 2],
+            'Wizard': [3, 2]
+        }
+        for num_iter in range(iter):
+            all_spells = self.spell_prompt()
+            if len(all_spells) == sum(num_cantrips_and_spells[self.char_class]):
+                return all_spells
+
+    def get_spells(self):
+        for name in self.spells_selection():
+            spell = get_spell(name)
+            self.spells.append(Spell(spell[0], spell[1], spell[2], spell[3], spell[4],
+                                     spell[5], spell[6], spell[7], spell[8]))
+
 
 load_dotenv()
 
@@ -327,12 +412,12 @@ load_dotenv()
 # user_setting = input('Введите краткое описание сеттинга: ')
 
 char_build = CharacterSheetBuilder(
-    user_request='лунтик',
-    user_setting='русский мультик про лунтика который свалился с луны'
+    user_request='маг',
+    user_setting='киберпанк'
 )
 
 if char_build.description and char_build.char_class and char_build.char_race \
-        and char_build.abilities and char_build.skills and char_build.all_item is not None:
+        and char_build.abilities and char_build.skills and char_build.spells and char_build.all_item is not None:
     print(f"Краткое описание персонажа: \n{char_build.description}\n"
           f"Класс персонажа: {char_build.char_class}\n"
           f"Расса персонажа: {char_build.char_race}\n"
@@ -341,4 +426,6 @@ if char_build.description and char_build.char_class and char_build.char_race \
           f"Предметы персонажа: ")
     for object_item in char_build.all_item:
         print(object_item)
-
+    print('Все спелы:')
+    for spell in char_build.spells:
+        print(spell)
