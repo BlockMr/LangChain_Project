@@ -90,12 +90,6 @@ class Skills(Base):
     survival: Mapped[str]
 
 
-class Components(enum.Enum):
-    V = 'Verbal'
-    S = 'Somatic'
-    M = 'Material'
-
-
 class Spells(Base):
     __tablename__ = 'spells'
 
@@ -107,7 +101,7 @@ class Spells(Base):
     school: Mapped[str]
     range_area: Mapped[str]
     attack_save: Mapped[str]
-    components: Mapped[Components]
+    components: Mapped[str]
     description: Mapped[str]
 
 
@@ -195,7 +189,6 @@ class Char_weapons(Base):
 
 
 engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@localhost/{env_vars.DB_NAME}')
-Base.metadata.create_all(bind=engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()

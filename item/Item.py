@@ -2,7 +2,7 @@ from langchain_openai import ChatOpenAI
 
 
 class Item:
-    def __init__(self, name, price, weight, description: str = None):
+    def __init__(self, name, price, weight, description=None):
         self.name = name
         self.price = price
         self.weight = weight

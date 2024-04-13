@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Literal
 from AbilityStats import AbilityStats
 from Skills import Skills
-from Spell import Spell
+from spells.Spell import Spell
 
 
 @dataclass
@@ -66,6 +66,5 @@ class Character:
         'Half-Orc': {'strength': 2, 'constitution': 1},
         'Tiefling': {'charisma': 2, 'intelligence': 1},
         'Human': {'strength': 1, 'dexterity': 1, 'constitution': 1, 'intelligence': 1, 'wisdom': 1, 'charisma': 1},
-        # 2 из:
         'Half-Elf': {'charisma': 2, ('strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'): 1}
     }
