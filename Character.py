@@ -38,7 +38,8 @@ class Character:
     skills: Skills
     spells: list[Spell]
 
-    char_class_skill = {
+
+char_class_skill = {
         'Barbarian': {('animal_handling', 'athletics', 'intimidation', 'nature', 'perception', 'survival'): 2},
         'Bard': {('acrobatics', 'animal_handling', 'arcana', 'athletics', 'deception', 'history', 'insight',
                   'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion',
@@ -57,7 +58,7 @@ class Character:
         'Wizard': {('arcana', 'history', 'insight', 'investigation', 'medicine', 'religion'): 2}
     }
 
-    char_race_abil = {
+char_race_abil = {
         'Elf': {'dexterity': 2},
         'Dwarf': {'constitution': 2},
         'Halfling': {'dexterity': 2},
