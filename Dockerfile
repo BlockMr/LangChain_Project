@@ -3,7 +3,7 @@ ENV MY_ENV=development
 WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
+COPY ./ ./
 ARG CLEAR_DB
 ENV CLEAR_DB=${CLEAR_DB}
 COPY run_bot.sh /app/run_bot.sh
