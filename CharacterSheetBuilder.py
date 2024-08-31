@@ -408,8 +408,8 @@ class CharacterSheetBuilder:
 
 load_dotenv()
 
-# user_request = input('Введите краткое описание персонажа: ')
-# user_setting = input('Введите краткое описание сеттинга: ')
+user_request = input('Введите краткое описание персонажа: ')
+user_setting = input('Введите краткое описание сеттинга: ')
 
 char_build = CharacterSheetBuilder(
     user_request='маг',

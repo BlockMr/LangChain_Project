@@ -1,5 +1,5 @@
-from db.db_models import Characters, Skills, Spells, Char_spells, AbilityStats, Gears, Char_items, Armors, Char_armors
-from db.db_models import Weapons, Char_weapons, engine
+from db_models import Characters, Skills, Spells, Char_spells, AbilityStats, Gears, Char_items, Armors, Char_armors
+from db_models import Weapons, Char_weapons, engine
 
 
 Char_weapons.__table__.drop(engine)

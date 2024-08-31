@@ -1,6 +1,6 @@
 from item.all_item import all_armor, all_gear, all_weapon
 from spells.all_spells import all_spells
-from db.db_models import Gears, Armors, Weapons, Spells, session, text
+from db.db_models import Gears, Armors, Weapons, Spells, session
 
 
 def add_gear(id, name, price, weight, description):

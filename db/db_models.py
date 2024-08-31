@@ -1,7 +1,7 @@
-from Env_vars import env_vars
+from ..Env_vars import env_vars
 from typing import Annotated
-from sqlalchemy import create_engine, String, Column, BigInteger, ARRAY, ForeignKey, text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationships
+from sqlalchemy import create_engine, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.orm import sessionmaker
 import enum
 
@@ -192,9 +192,3 @@ engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@l
 
 Session = sessionmaker(bind=engine)
 session = Session()
-
-
-# создать отдельный документ где буду прописаны все методы взимодействия с бд
-# делать не бекап, а написать скрипт который на старте вгружает данные в бд
-# сделать файл со всей инфой о предметах и тд, соответственно пофиксить классы и чаршит от списков
-# после правильного заполнения бд и всех проверок, прописать методы взаимодействия чаршита и бд
