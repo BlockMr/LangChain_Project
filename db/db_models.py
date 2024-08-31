@@ -1,9 +1,10 @@
-from ..Env_vars import env_vars
 from typing import Annotated
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.orm import sessionmaker
 import enum
+
+from Env_vars import env_vars
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
 

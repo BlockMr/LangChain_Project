@@ -1,22 +1,15 @@
-version: '3.9'
-
 services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
 
   postgres:
-    image: postgres:13
+    image: "postgres:13"
     container_name: postgres13
     environment:
-      POSTGRES_USER: secret.POSTGRES_USER
-      POSTGRES_PASSWORD: secret.POSTGRES_PASS
-      POSTGRES_DB: secret.POSTGRES_DB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qawsed
+      POSTGRES_DB: dnd
     ports:
       - "5432:5432"
     volumes:
