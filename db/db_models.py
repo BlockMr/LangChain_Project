@@ -1,10 +1,11 @@
+import enum
 from typing import Annotated
+
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.orm import sessionmaker
-import enum
 
-from Env_vars import env_vars
+# from Env_vars import env_vars
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
 
@@ -189,7 +190,9 @@ class Char_weapons(Base):
     weapon_id: Mapped[int] = mapped_column(ForeignKey('weapons.weapon_id'))
 
 
-engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@localhost/{env_vars.DB_NAME}')
+engine = create_engine('sqlite:///dnd.db', pool_pre_ping=True)
+# engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@localhost/{env_vars.DB_NAME}', pool_pre_ping=True)
+
 
 Session = sessionmaker(bind=engine)
 session = Session()

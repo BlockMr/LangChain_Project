@@ -1,6 +1,8 @@
+from sqlalchemy import select
+
+from db_models import Gears, Armors, Weapons, Spells, session
 from item.all_item import all_armor, all_gear, all_weapon
 from spells.all_spells import all_spells
-from db.db_models import Gears, Armors, Weapons, Spells, session
 
 
 def add_gear(id, name, price, weight, description):
@@ -129,64 +131,59 @@ def add_all_spell():
 
 def get_all_weapons_name():
     with session as db:
-        res = db.execute(text('SELECT name FROM weapons'))
+        res = db.execute(select(Weapons)).all()
     all_name = []
-    for name in res:
-        all_name.append(name[0])
+    for weapon in res:
+        all_name.append(weapon[0].name)
     return all_name
 
 
 def get_all_armors_name():
     with session as db:
-        res = db.execute(text('SELECT name FROM armors'))
+        res = db.execute(select(Armors)).all()
     all_name = []
-    for name in res:
-        all_name.append(name[0])
+    for armor in res:
+        all_name.append(armor[0].name)
     return all_name
 
 
 def get_all_gears_name():
     with session as db:
-        res = db.execute(text('SELECT name FROM gears'))
+        res = db.execute(select(Gears)).all()
     all_name = []
-    for name in res:
-        all_name.append(name[0])
+    for item in res:
+        all_name.append(item[0].name)
     return all_name
 
 
 def get_all_spells_name():
     with session as db:
-        res = db.execute(text('SELECT name FROM spells'))
+        res = db.execute(select(Spells)).all()
     all_name = []
-    for name in res:
-        all_name.append(name[0])
+    for spell in res:
+        all_name.append(spell[0].name)
     return all_name
 
 
 def get_weapon(name):
     with session as db:
-        res = db.execute(text('SELECT name, price, weight, damage_type, damage, properties, description FROM weapons WHERE name = :weapon_name'), {'weapon_name': name})
-    all_inf = res.all()[0]
-    return all_inf
+        res = db.execute(select(Weapons).where(Weapons.name == name)).scalar_one_or_none()
+    return res
 
 
 def get_gear(name):
     with session as db:
-        res = db.execute(text('SELECT name, price, weight, description FROM gears WHERE name = :gear_name'), {'gear_name': name})
-    all_inf = res.all()[0]
-    return all_inf
+        res = db.execute(select(Gears).where(Gears.name == name)).scalar_one_or_none()
+    return res
 
 
 def get_armor(name):
     with session as db:
-        res = db.execute(text('SELECT name, price, weight, armor_class, strength, stealth, armor_type, description FROM armors where name = :armor_name'), {'armor_name': name})
-    all_inf = res.all()[0]
-    return all_inf
+        res = db.execute(select(Armors).where(Armors.name == name)).scalar_one_or_none()
+    return res
 
 
 def get_spell(name):
     with session as db:
-        res = db.execute(text('SELECT name, level, cast_time, duration, school, range_area, attack_save, components,'
-                              ' description FROM spells where name = :spell_name'), {'spell_name': name})
-    all_inf = res.all()[0]
-    return all_inf
+        res = db.execute(select(Spells).where(Spells.name == name)).scalar_one_or_none()
+    return res

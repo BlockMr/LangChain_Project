@@ -408,12 +408,12 @@ class CharacterSheetBuilder:
 
 load_dotenv()
 
-user_request = input('Введите краткое описание персонажа: ')
-user_setting = input('Введите краткое описание сеттинга: ')
+# user_request = input('Введите краткое описание персонажа: ')
+# user_setting = input('Введите краткое описание сеттинга: ')
 
 char_build = CharacterSheetBuilder(
-    user_request='маг',
-    user_setting='киберпанк'
+    user_request='влад',
+    user_setting='звездные войны'
 )
 
 if char_build.description and char_build.char_class and char_build.char_race \
