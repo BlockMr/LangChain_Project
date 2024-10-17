@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from db_models import Gears, Armors, Weapons, Spells, session
+from db.db_models import Gears, Armors, Weapons, Spells, session
 from item.all_item import all_armor, all_gear, all_weapon
 from spells.all_spells import all_spells
 
