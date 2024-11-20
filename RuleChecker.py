@@ -1,5 +1,4 @@
 from Character import char_race_abil, char_class_skill
-from db.db_methods import get_all_weapons_name
 
 
 class RuleChecker:
@@ -13,8 +12,8 @@ class RuleChecker:
         return fix_list
 
     @classmethod
-    def check_char_and_race(cls, race_and_class: list):
-        if race_and_class[0] not in char_race_abil or race_and_class[1] not in char_class_skill:
+    def check_char_and_race(cls, char_race: str, char_class: str):
+        if char_race not in char_race_abil.keys() or char_class not in char_class_skill.keys():
             return False
 
         return True
@@ -36,7 +35,7 @@ class RuleChecker:
     @classmethod
     def check_eval(cls, check_res):
         try:
-            check_res = eval(check_res)
+            _ = eval(check_res)
         except SyntaxError:
             return False
         return True

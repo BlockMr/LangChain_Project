@@ -4,8 +4,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-RUN ls -la
+
 ENV ITER=2
-ENV API_KEY_OPENAI=sk--beE7YCDsO-SwnG5gxTH-KDnHNju5Eco2GpwejQi0-T3BlbkFJnfH455O2_hgZsmURbJubMlk389fVdu9NjO_xhFl1EA
+ENV API_KEY_OPENAI=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
 ENV TG_API=7026319380:AAErNkgGngWwQxFT7mBvcmrchUrfzmf5oGE
 CMD ["python", "CharacterSheetBuilder.py"]

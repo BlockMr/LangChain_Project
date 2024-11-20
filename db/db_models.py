@@ -190,7 +190,7 @@ class Char_weapons(Base):
     weapon_id: Mapped[int] = mapped_column(ForeignKey('weapons.weapon_id'))
 
 
-engine = create_engine('sqlite:///dnd.db', pool_pre_ping=True)
+engine = create_engine('sqlite:///db/dnd.db')
 # engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@localhost/{env_vars.DB_NAME}', pool_pre_ping=True)
 
 
