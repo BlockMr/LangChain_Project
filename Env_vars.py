@@ -1,20 +1,18 @@
-from dotenv import load_dotenv, dotenv_values
+import os
 
 
-class Env_vars(object):
+class EnvVars:
     __instance = None
 
     def __new__(cls):
         if not cls.__instance:
-            cls.__instance = super(Env_vars, cls).__new__(cls)
-            load_dotenv()
-            config = dotenv_values()
-            for key, value in config.items():
+            cls.__instance = super(EnvVars, cls).__new__(cls)
+            for key in os.environ:
                 getter = cls.create_getter(key)
                 setter = cls.create_setter(key)
                 prop = property(getter, setter)
                 setattr(cls, key, prop)
-                setattr(cls.__instance, '_' + key, value)
+                setattr(cls.__instance, '_' + key, os.environ.get(key))
         return cls.__instance
 
     @staticmethod
@@ -30,4 +28,4 @@ class Env_vars(object):
         return setter
 
 
-env_vars = Env_vars()
+env_vars = EnvVars()

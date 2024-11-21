@@ -1,9 +1,11 @@
-from Env_vars import env_vars
-from typing import Annotated
-from sqlalchemy import create_engine, String, Column, BigInteger, ARRAY, ForeignKey, text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationships
-from sqlalchemy.orm import sessionmaker
 import enum
+from typing import Annotated
+
+from sqlalchemy import create_engine, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import sessionmaker
+
+# from Env_vars import env_vars
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
 
@@ -90,12 +92,6 @@ class Skills(Base):
     survival: Mapped[str]
 
 
-class Components(enum.Enum):
-    V = 'Verbal'
-    S = 'Somatic'
-    M = 'Material'
-
-
 class Spells(Base):
     __tablename__ = 'spells'
 
@@ -107,7 +103,7 @@ class Spells(Base):
     school: Mapped[str]
     range_area: Mapped[str]
     attack_save: Mapped[str]
-    components: Mapped[Components]
+    components: Mapped[str]
     description: Mapped[str]
 
 
@@ -194,14 +190,9 @@ class Char_weapons(Base):
     weapon_id: Mapped[int] = mapped_column(ForeignKey('weapons.weapon_id'))
 
 
-engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@localhost/{env_vars.DB_NAME}')
-Base.metadata.create_all(bind=engine)
+engine = create_engine('sqlite:///db/dnd.db')
+# engine = create_engine(f'postgresql+psycopg2://{env_vars.USER}:{env_vars.PASS}@localhost/{env_vars.DB_NAME}', pool_pre_ping=True)
+
 
 Session = sessionmaker(bind=engine)
 session = Session()
-
-
-# создать отдельный документ где буду прописаны все методы взимодействия с бд
-# делать не бекап, а написать скрипт который на старте вгружает данные в бд
-# сделать файл со всей инфой о предметах и тд, соответственно пофиксить классы и чаршит от списков
-# после правильного заполнения бд и всех проверок, прописать методы взаимодействия чаршита и бд

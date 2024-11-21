@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Literal
 from AbilityStats import AbilityStats
 from Skills import Skills
-from Spell import Spell
+from spells.Spell import Spell
 
 
 @dataclass
@@ -38,7 +38,8 @@ class Character:
     skills: Skills
     spells: list[Spell]
 
-    char_class_skill = {
+
+char_class_skill = {
         'Barbarian': {('animal_handling', 'athletics', 'intimidation', 'nature', 'perception', 'survival'): 2},
         'Bard': {('acrobatics', 'animal_handling', 'arcana', 'athletics', 'deception', 'history', 'insight',
                   'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion',
@@ -57,7 +58,7 @@ class Character:
         'Wizard': {('arcana', 'history', 'insight', 'investigation', 'medicine', 'religion'): 2}
     }
 
-    char_race_abil = {
+char_race_abil = {
         'Elf': {'dexterity': 2},
         'Dwarf': {'constitution': 2},
         'Halfling': {'dexterity': 2},
@@ -66,6 +67,5 @@ class Character:
         'Half-Orc': {'strength': 2, 'constitution': 1},
         'Tiefling': {'charisma': 2, 'intelligence': 1},
         'Human': {'strength': 1, 'dexterity': 1, 'constitution': 1, 'intelligence': 1, 'wisdom': 1, 'charisma': 1},
-        # 2 из:
         'Half-Elf': {'charisma': 2, ('strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'): 1}
     }
