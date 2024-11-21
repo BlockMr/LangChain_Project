@@ -1,17 +1,17 @@
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from Character import char_class_skill, char_race_abil
 from AbilityStats import AbilityStats, AbilityStat
+from Character import char_class_skill, char_race_abil
 from Env_vars import env_vars
-from item import Weapon as Wp
-from item import Armor as Ar
-from item import Item as It
+from RuleChecker import RuleChecker
 from Skills import Skills
-from spells.Spell import Spell
+from Utility import Utility
 from db.db_methods import get_all_weapons_name, get_all_armors_name, get_all_gears_name
 from db.db_methods import get_gear, get_armor, get_weapon, get_spell
-from RuleChecker import RuleChecker
-from Utility import Utility
+from item import Armor as Ar
+from item import Item as It
+from item import Weapon as Wp
+from spells.Spell import Spell
 
 
 class CharacterSheetBuilder:
@@ -29,36 +29,51 @@ class CharacterSheetBuilder:
         self.creative_llm = ChatOpenAI(openai_api_key=env_vars.API_KEY_OPENAI, temperature=0.7)
         self.json_llm = ChatOpenAI(openai_api_key=env_vars.API_KEY_OPENAI, temperature=0)
         self.get_description()
-        # self.get_weapon()
-        # self.get_armor()
-        # self.get_gear()
-        # self.get_char_class_and_race()
-        # self.get_ability_stats()
-        # self.get_skills()
-        # self.get_spells()
+        self.get_weapon()
+        self.get_armor()
+        self.get_gear()
+        self.get_char_class_and_race()
+        self.get_ability_stats()
+        self.get_skills()
+        self.get_spells()
 
     def get_description(self):
         prompt = (
-            f"Создай краткое художественное описание внешности и одежды персонажа, "
+            f"Создай краткое художественное описание (на английском языке) внешности и одежды персонажа, "
             f"который существует в рамках сеттинга: {self.user_setting}. "
             f"Используй следующее краткое описание персонажа: {self.user_request}. "
             f"Обрати внимание на все детали, указанные пользователем, и постарайся учесть их в описании. "
             f"Описание должно быть точным, атмосферным и соответствовать заданному сеттингу."
         )
+        # prompt = (
+        #     f"Для персонажа с этим описанием: {self.user_request}, создай художественное описание его внешности и одежды. "
+        #     f"Персонаж существует в рамках сеттинга: {self.user_setting}. "
+        #     f"Твоя задача — выделить ключевые детали из описания, такие как возраст, телосложение, выражение лица, "
+        #     f"тип одежды и аксессуары, чтобы они подходили сеттингу и передавали атмосферу персонажа. "
+        #     f"Убедись, что описание внешности является компактным, но детализированным, чтобы оно идеально подходило к его роли. "
+        #     f"Не добавляй лишние выдуманные детали, но постарайся максимально раскрыть образ персонажа."
+        # )
         description = self.creative_llm.invoke(prompt).content
         self.description = description
 
     def weapon_prompt(self):
+        # prompt = (
+        #     f"Для персонажа с описанием: {self.description}, выбери предметы строго из следующего списка.\n"
+        #     f"\nСписок предметов с индексами:\n{Utility.generate_indexed_list(get_all_weapons_name())}"
+        #     f"\nВыбор должен быть только из указанных предметов. Нельзя выбирать ничего, что не указано в списке. "
+        #     f"Количество предметов должно соответствовать социальному статусу персонажа (богатство или бедность). "
+        #     f"В ответ дай только список индексов выбранных предметов в формате: [index1, index2, index3]. "
+        #     f"Больше в ответ ничего писать не нужно."
+        # )
+
         prompt = (
-            f"Для персонажа с описанием: {self.description}, выбери предметы строго из следующего списка.\n"
-            f"\nСписок предметов с индексами:\n{Utility.generate_indexed_list(get_all_weapons_name())}"
-            f"\nВыбор должен быть только из указанных предметов. Нельзя выбирать ничего, что не указано в списке. "
-            f"Количество предметов должно соответствовать социальному статусу персонажа (богатство или бедность). "
-            f"В ответ дай только список индексов выбранных предметов в формате: [index1, index2, index3]. "
-            f"Больше в ответ ничего писать не нужно."
+            f"Подбери предметы для персонажа на основе его социального статуса (богатство или бедность) и краткого описания: {self.description}. "
+            f"Выбирай предметы только из списка: {get_all_weapons_name()}. Не предлагай предметы, которых нет в этом списке. "
+            f"Количество предметов должно соответствовать статусу персонажа."
+            f"Ответь только названиями предметов в формате: [\"name\", \"name\", \"name\"]"
         )
 
-        weapon_for_char = self.llm.invoke(prompt).content
+        weapon_for_char = self.json_llm.invoke(prompt).content
 
         return weapon_for_char
 
@@ -88,10 +103,10 @@ class CharacterSheetBuilder:
             f"Выбирай подходящие предметы только из списка: {get_all_armors_name()}. "
             f"Учитывай уровень достатка персонажа и задачи, которые он решает в своих приключениях. "
             f"Помни, что персонаж не сможет надеть более одного комплекта брони. "
-            f"Ответь только названиями предметов в формате: ['name', 'name', 'name']"
+            f"Ответь только названиями предметов в формате: [\"name\", \"name\", \"name\"]"
         )
 
-        armor_for_char = self.llm.invoke(prompt).content
+        armor_for_char = self.json_llm.invoke(prompt).content
 
         return armor_for_char
 
@@ -122,10 +137,10 @@ class CharacterSheetBuilder:
             f"Выбирай только из списка: {get_all_gears_name()}, и подбирай предметы, подходящие по уровню достатка персонажа "
             f"и его задачам. Количество предметов также должно соответствовать его статусу. "
             f"Убедись, что все выбранные предметы 100% присутствуют в списке. "
-            f"Ответь только названиями предметов в формате: ['name', 'name']"
+            f"Ответь только названиями предметов в формате: [\"name\", \"name\", \"name\"]"
         )
 
-        gear_for_char = self.llm.invoke(prompt).content
+        gear_for_char = self.json_llm.invoke(prompt).content
 
         return gear_for_char
 
@@ -157,7 +172,7 @@ class CharacterSheetBuilder:
             f"Больше в ответ ничего писать не нужно."
         )
 
-        char_race_class = self.llm.invoke(prompt).content
+        char_race_class = self.json_llm.invoke(prompt).content
 
         return char_race_class
 
@@ -166,9 +181,7 @@ class CharacterSheetBuilder:
             char_race_and_class = self.char_class_and_race_prompt()
             if RuleChecker.check_eval(char_race_and_class):
                 char_race = list(char_race_abil.keys())[eval(char_race_and_class)[0]]
-                print(char_race)
                 char_class = list(char_class_skill.keys())[eval(char_race_and_class)[1]]
-                print(char_class)
                 if RuleChecker.check_char_and_race(char_race, char_class):
                     self.char_race = char_race
                     self.char_class = char_class
@@ -179,14 +192,20 @@ class CharacterSheetBuilder:
 
     def ability_stats_prompt(self):
         self.abilities = AbilityStats()
-        stats_prompt = f'для персонажа имеющего описание {self.description} напиши значение харатеристик:' \
-                       f'{", ".join(self.abilities.all_ability)}.' \
-                       f'Характеристики могут принимать значение от 0 до 20. В ответ пожалуйста дай только список' \
-                       f'в таком формате:' \
-                       '{"strength": значение, "dexterity": значение, "constitution": значение,' \
-                       ' "intelligence": значение, "wisdom": значение, "charisma": значение}'
 
-        raw_stats = self.llm.invoke(stats_prompt).content
+        stats_prompt = (
+            f"Для персонажа с описанием: {self.description}, выбери значения следующих характеристик: "
+            f"{', '.join(self.abilities.all_ability)}. "
+            f"Характеристики могут принимать значения от 0 до 20. Пожалуйста, определяй значения характеристик, "
+            f"основываясь на описании персонажа и его чертах. Если персонаж выглядит физически сильным, "
+            f"увеличь значение силы, если он описан как ловкий — увеличь ловкость, если умный — интеллект, "
+            f"и так далее. Учитывай любые упомянутые особенности или навыки из описания. "
+            f"Ответ дай строго в формате: "
+            f'{{"strength": значение, "dexterity": значение, "constitution": значение, '
+            f'"intelligence": значение, "wisdom": значение, "charisma": значение}}.'
+        )
+
+        raw_stats = self.creative_llm.invoke(stats_prompt).content
 
         return raw_stats
 
@@ -201,13 +220,25 @@ class CharacterSheetBuilder:
         print('Подобрать ability_stats не удалось, повторите попытку создания')
         return quit()
 
+    # TODO исправить генерацию для персонажей по типу Half-Elf, у них присутствует выбор в характеристиках
+
     def ability_stats_bonus_prompt_for_other_race(self):
         all_bonus = char_race_abil[self.char_race]
-        bonus_for_other_race_prompt = f'для персонажа имеющего описание {self.description} выбери 2 характеристики' \
-                                      f'которые более всего подходят для этого персонажа из списка ' \
-                                      f'{list(all_bonus.keys())[1]} в ответ напиши только список этих характеристик - ' \
-                                      f'["name", "name"]'
-        bonus = self.llm.invoke(bonus_for_other_race_prompt).content
+        # bonus_for_other_race_prompt = f'для персонажа имеющего описание {self.description} выбери 2 характеристики' \
+        #                               f'которые более всего подходят для этого персонажа из списка ' \
+        #                               f'{list(all_bonus.keys())[1]} в ответ напиши только список этих характеристик - ' \
+        #                               f'["name", "name"]'
+
+        bonus_for_other_race_prompt = (
+            f"Для персонажа с описанием: {self.description}, выбери 2 характеристики, которые наиболее подходят "
+            f"этому персонажу, основываясь на его чертах, навыках или поведении, указанном в описании. "
+            f"Характеристики выбирай только из следующего списка: {list(all_bonus.keys())[1]}. "
+            f"Постарайся учитывать все детали, указанные в описании, и выбери те характеристики, которые лучше всего "
+            f"отражают суть персонажа. "
+            f"Ответ дай строго в формате списка: [\"name\", \"name\"]. Ничего больше добавлять не нужно."
+        )
+
+        bonus = self.json_llm.invoke(bonus_for_other_race_prompt).content
 
         return bonus
 
@@ -246,14 +277,16 @@ class CharacterSheetBuilder:
                     setattr(self.abilities, '_' + ability_name, stat)
 
     def bonus_skills_prompt(self):
-        choice_skills_prompt = f'Для персонажа, имеющего описание {self.description} выбери ' \
-                               f'{char_class_skill[self.char_class].values()} харатеристики из ' \
-                               f'{list(char_class_skill[self.char_class].keys())}, которые с ' \
-                               f'наибольшей вероятностью понадобятся этому персонажу во время игры. Ответ выдай ' \
-                               f'в формате - ["характеристика", "характеристика"]'
+        choice_skills_prompt = (
+            f"Для персонажа с описанием: {self.description}, выбери {char_class_skill[self.char_class].values()} "
+            f"характеристики из следующего списка: {list(char_class_skill[self.char_class].keys())}. "
+            f"Выбирай те характеристики, которые с наибольшей вероятностью понадобятся этому персонажу в ходе игры, "
+            f"учитывая его описание и предполагаемые действия. "
+            f"Ответ дай строго в формате: [\"name\", \"name\", \"name\"]. Ничего больше добавлять не нужно."
+        )
 
         # ['acrobatics', 'stealth', 'sleight_of_hand', 'perception']
-        bonus_skills = self.llm.invoke(choice_skills_prompt).content
+        bonus_skills = self.json_llm.invoke(choice_skills_prompt).content
 
         return bonus_skills
 
@@ -290,6 +323,8 @@ class CharacterSheetBuilder:
                     setattr(self.skills, skills_name, value.value + 2)
                 else:
                     setattr(self.skills, skills_name, value.value)
+
+    # TODO посоветоваться с Андреем на счет (372) if self.char_class in list(spells_and_cantrips_for_class.keys()):, есть ли смысл запускать функцию, если чел не маг
 
     def spell_prompt(self):
         spells_and_cantrips_for_class = {
@@ -342,20 +377,30 @@ class CharacterSheetBuilder:
             'Warlock': [2, 2],
             'Wizard': [3, 2]
         }
-        if self.char_class in list(spells_and_cantrips_for_class.keys()):
-            choice_spells_prompt = f"Для персонажа, с кратким описанием - {self.description}, выбери " \
-                                   f"{num_cantrips_and_spells_for_class[self.char_class][0]} разных заговора из списка: " \
-                                   f"{spells_and_cantrips_for_class[self.char_class][0]}, и " \
-                                   f"{num_cantrips_and_spells_for_class[self.char_class][1]} разных заклинания из списка: " \
-                                   f"{spells_and_cantrips_for_class[self.char_class][1]}. " \
-                                   f"В ответ напиши только два списка через ';' вот так - " \
-                                   f"['name', 'name']; ['name', 'name']"
+        # choice_spells_prompt = f"Для персонажа, с кратким описанием - {self.description}, выбери " \
+        #                        f"{num_cantrips_and_spells_for_class[self.char_class][0]} разных заговора из списка: " \
+        #                        f"{spells_and_cantrips_for_class[self.char_class][0]}, и " \
+        #                        f"{num_cantrips_and_spells_for_class[self.char_class][1]} разных заклинания из списка: " \
+        #                        f"{spells_and_cantrips_for_class[self.char_class][1]}. " \
+        #                        f"В ответ напиши только два списка через ';' вот так - " \
+        #                        f"['name', 'name']; ['name', 'name']"
 
-            all_spells = self.llm.invoke(choice_spells_prompt).content
+        choice_spells_prompt = (
+            f"Для персонажа с кратким описанием: {self.description}, выбери "
+            f"{num_cantrips_and_spells_for_class[self.char_class][0]} различных заговора из следующего списка: "
+            f"{spells_and_cantrips_for_class[self.char_class][0]} и "
+            f"{num_cantrips_and_spells_for_class[self.char_class][1]} различных заклинания из следующего списка: "
+            f"{spells_and_cantrips_for_class[self.char_class][1]}. "
+            f"Выбирай заклинания, которые лучше всего подходят для персонажа, учитывая его описание и возможный стиль игры. "
+            f"Ответ дай строго в формате двух списков через точку с запятой: ['name', 'name']; ['name', 'name'] "
+            f"Не добавляй ничего лишнего."
+        )
 
-            return all_spells
+        all_spells = self.json_llm.invoke(choice_spells_prompt).content
 
-    def spells_selection(self, iter=int(env_vars.ITER)):
+        return all_spells
+
+    def spells_selection(self, iter=int(env_vars.ITER) - 1):
         spells_and_cantrips_for_class = {
             'Bard': (
                 ['Dancing Lights', 'Light', 'Mage Hand', 'Mending', 'Message', 'Minor Illusion', 'Prestidigitation',
@@ -425,10 +470,14 @@ class CharacterSheetBuilder:
         return quit()
 
     def get_spells(self):
-        for name in self.spells_selection():
-            spell_inf = get_spell(name)
-            self.spells.append(Spell(spell_inf[0], spell_inf[1], spell_inf[2], spell_inf[3], spell_inf[4],
-                                     spell_inf[5], spell_inf[6], spell_inf[7], spell_inf[8]))
+        kostyl = ['Bard', 'Cleric', 'Druid', 'Sorcerer', 'Warlock', 'Wizard']
+        if self.char_class in kostyl:
+            for name in self.spells_selection():
+                spell_inf = get_spell(name)
+                self.spells.append(Spell(name=spell_inf.name, level=spell_inf.level, cast_time=spell_inf.cast_time,
+                                         duration=spell_inf.duration, school=spell_inf.school,
+                                         range_area=spell_inf.range_area, attack_save=spell_inf.attack_save,
+                                         components=spell_inf.components, description=spell_inf.description))
 
 
 load_dotenv()
@@ -437,24 +486,20 @@ load_dotenv()
 # user_setting = input('Введите краткое описание сеттинга: ')
 
 char_build = CharacterSheetBuilder(
-    user_request='мальчик томас',
-    user_setting='звездные войны'
+    user_request='Саша футболист',
+    user_setting='классическое фентези'
 )
 
-print(char_build.description)
-
-# print(char_build.char_race, char_build.char_class)
-
-# if char_build.description and char_build.char_class and char_build.char_race \
-#         and char_build.abilities and char_build.skills and char_build.spells and char_build.all_item is not None:
-#     print(f"Краткое описание персонажа: \n{char_build.description}\n"
-#           f"Класс персонажа: {char_build.char_class}\n"
-#           f"Расса персонажа: {char_build.char_race}\n"
-#           f"Абилки персонажа: {char_build.abilities}\n"
-#           f"Скилы персонажа: {char_build.skills}\n"
-#           f"Предметы персонажа: ")
-#     for object_item in char_build.all_item:
-#         print(object_item)
-#     print('Все спелы:')
-#     for all_inf in char_build.spells:
-#         print(all_inf)
+if char_build.description and char_build.char_class and char_build.char_race \
+        and char_build.abilities and char_build.skills is not None:
+    print(f"Краткое описание персонажа: \n{char_build.description}\n"
+          f"Класс персонажа: {char_build.char_class}\n"
+          f"Расса персонажа: {char_build.char_race}\n"
+          f"Абилки персонажа: {char_build.abilities}\n"
+          f"Скилы персонажа: {char_build.skills}\n"
+          f"Предметы персонажа: ")
+    for object_item in char_build.all_item:
+        print(object_item)
+    print('Все спелы:')
+    for all_inf in char_build.spells:
+        print(all_inf)
